@@ -18,60 +18,25 @@
          irregex
          srfi-18)
     
-    (define old-write-line write-line)
-    
-    (define (write-line line)
-      #;(debug/syslog line)
-      (old-write-line line))
-    
     (define (parse-parameters)
       (let next-parameter ((parameter (read-line))
                            (parameters '()))
-        (debug/syslog parameter)
         (match (string-tokenize parameter)
           (("ready")
-           (write-line "go"))
+           (begin
+             (write-line "go")
+             parameters))
           ((key value)
            (next-parameter (read-line)
                            (alist-cons (string->symbol key)
                                        (string->number value)
                                        parameters))))))
     
-    (define (turn? turn)
-      (irregex-match "turn [0-9]+" turn))
+    (debug (parse-parameters))
     
-    (define (game-loop)
-      (debug/syslog "YES, WIRKLICH!")
-      (let next-turn ((turn (read-line)))
-        (debug/syslog turn)
-        #;
-        (match turn
-          ((? turn)
-           (debug/syslog "bitches!"))
-          (_ (debug/syslog "fuck that!")))))
-    
-    (parse-parameters)
-    (debug/syslog "unthoeuthnueothnNTHTHNTNHTHN")
-    
-    #;
-    (thread-start!
-     (make-thread
-      (lambda ()
-        (let loop ()
-          (let ((line (read-line)))
-            (debug/syslog (format "HARRRO ~a" line)))))))
-    
-     (let loop ()
-       (begin
-         (thread-start!
-          (make-thread
-           read-line))
-         (write-line "go")
-         (loop)))
-    
-    #;(game-loop)
-    (debug/syslog "balls")
-    ;; (debug/syslog "balls" (read-line))
-    ;; (debug "balls2")
+    (let loop ()
+      (begin
+        (write-line "go")
+        (loop)))
     
   #+END_SRC
