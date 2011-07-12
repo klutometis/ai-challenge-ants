@@ -124,10 +124,17 @@
   #+BEGIN_SRC scheme :tangle chibi-bot.scm :shebang #!/home/pcdanenb/prg/scm/ai-challenge/chibi-scheme
     (import (srfi 1)
             (srfi 18)
+            (srfi 27)
+            (srfi 28)
+            (srfi 33)
             (chibi match)
             (chibi io))
     
     (load "srclib/irregex-0.8.1/irregex.scm")
+    
+    ;; (define random-source (make-random-source))
+    ;; (random-source-randomize! random-source)
+    ;; (define random-integer (random-source-make-integers random-source))
     
     ;; (define (string-tokenize string)
     ;;   (irregex-extract '(: (+ graphic)) string))
@@ -155,53 +162,146 @@
                                            (string->number value)
                                            parameters)))))))
     
-    (define (game-loop)
-      (let next-turn ((turn (read-line))
-                      (turn-buffer '()))
-        ;; Match on `turn', `w', `f', `a', `d', `go', `score'. Upon
-        ;; `turn', clear everything except for water; `f', `a', `d':
-        ;; update the state matrix; `score': feedback for utility
-        ;; functions or just testing?
-        ;;
-        ;; `end' and `players' are documented, but I haven't seen them yet
-        ;; (can we communicate with some kind of external server to push
-        ;; data to a utility function?).
-        (write-line turn (current-error-port))
-        (if (eof-object? turn)
-            0
-            (begin
-              (match (string-tokenize turn)
-                (("go")
-                 (begin
-                   ;; Write game logic here.
-                   (write-line "go")
-                   (flush-output)))
-                (("turn" turn)
-                 ;; Reset the state-matrix here.
-                 )
-                (("w" row col)
-                 (let ((row (string->number row))
-                       (col (string->number col)))
-                   'pass))
-                (("f" row col)
-                 (let ((row (string->number row))
-                       (col (string->number col)))
-                   'pass))
-                (("a" row col owner)
-                 (let ((row (string->number row))
-                       (col (string->number col)))
-                   'pass))
-                (("d" row col owner)
-                 (let ((row (string->number row))
-                       (col (string->number col)))
-                   'pass)))
-              (next-turn (read-line) '())))))
+    (define (make-state-matrix rows columns)
+      (let ((matrix (make-vector rows)))
+        (let set-next-row ((rows rows))
+          (if (zero? rows)
+              matrix
+              (let ((row (- rows 1)))
+                (vector-set! matrix row (make-vector columns 0))
+                (set-next-row row))))))
+    
+    (define water (expt 2 0))
+    (define food (expt 2 1))
+    (define live-ant (expt 2 2))
+    (define dead-ant (expt 2 3))
+    
+    (define (state-matrix-ref matrix row column)
+      (vector-ref (vector-ref matrix row) column))
+    
+    (define (state-matrix-set! matrix row column value)
+      (vector-set! (vector-ref matrix row) column value))
+    
+    (define (state-matrix-update! matrix row column update)
+      (state-matrix-set!
+       matrix
+       row
+       column
+       (update (state-matrix-ref matrix row column))))
+    
+    ;;; Vector-lib, foof-loop, etc.
+    (define (state-matrix-for-each matrix apply)
+      (let next-row ((row-number (vector-length matrix)))
+        (if (positive? row-number)
+            (let ((row (vector-ref matrix (- row-number 1))))
+              (let next-column ((column-number (vector-length row)))
+                (if (positive? column-number)
+                    (begin
+                      (apply (- row-number 1)
+                             (- column-number 1))
+                      (next-column (- column-number 1)))
+                    (next-row (- row-number 1))))))))
+    
+    ;;; Keep track of ant-locations somewhere?
+    (define (state-matrix-for-each-ant matrix apply)
+      (state-matrix-for-each
+       matrix
+       (lambda (row column)
+         (if (= (bitwise-and (state-matrix-ref matrix row column) live-ant)
+                live-ant)
+             (apply row column)))))
+    
+    (define (game-loop rows columns)
+      (let ((state-matrix (make-state-matrix rows columns)))
+        (let next-turn ((turn (read-line))
+                        (turn-buffer '()))
+          ;; Match on `turn', `w', `f', `a', `d', `go', `score'. Upon
+          ;; `turn', clear everything except for water; `f', `a', `d':
+          ;; update the state matrix; `score': feedback for utility
+          ;; functions or just testing?
+          ;;
+          ;; `end' and `players' are documented, but I haven't seen them yet
+          ;; (can we communicate with some kind of external server to push
+          ;; data to a utility function?).
+          ;; (write-line turn (current-error-port))
+          (if (eof-object? turn)
+              0
+              (begin
+                (match (string-tokenize turn)
+                  (("go")
+                   (begin
+                     ;; Write game logic here.
+                     ;; (write-line state-matrix (current-error-port))
+                     (state-matrix-for-each-ant
+                      state-matrix
+                      (lambda (row column)
+                        (let ((direction (list-ref '("N" "S" "E" "W")
+                                                  (random-integer 4))))
+                          (write-line (format "o ~a ~a ~a" row column direction)))))
+                     (write-line "go")
+                     (flush-output)))
+                  (("turn" turn)
+                   (state-matrix-for-each
+                    state-matrix
+                    (lambda (row column)
+                      (state-matrix-update!
+                       state-matrix
+                       row
+                       column
+                       (lambda (state)
+                         (bitwise-and state
+                                      (bitwise-not
+                                       (bitwise-ior food
+                                                    live-ant
+                                                    dead-ant))))))))
+                  (("w" row col)
+                   (let ((row (string->number row))
+                         (col (string->number col)))
+                     (state-matrix-update!
+                      state-matrix
+                      row
+                      col
+                      (lambda (state)
+                        (bitwise-ior state water)))))
+                  (("f" row col)
+                   (let ((row (string->number row))
+                         (col (string->number col)))
+                     (state-matrix-update!
+                      state-matrix
+                      row
+                      col
+                      (lambda (state)
+                        (bitwise-ior state food)))))
+                  (("a" row col owner)
+                   (let ((row (string->number row))
+                         (col (string->number col))
+                         (owner (string->number owner)))
+                     ;; Not even tracking enemy ants yet
+                     (if (zero? owner)
+                         (state-matrix-update!
+                          state-matrix
+                          row
+                          col
+                          (lambda (state)
+                            (bitwise-ior state live-ant))))))
+                  (("d" row col owner)
+                   (let ((row (string->number row))
+                         (col (string->number col)))
+                     (state-matrix-update!
+                      state-matrix
+                      row
+                      col
+                      (lambda (state)
+                        (bitwise-ior state dead-ant))))))
+                (next-turn (read-line) '()))))))
     
     (define (main arguments)
       (let ((parameters (parse-parameters)))
         (write-line parameters (current-error-port))
         (flush-output (current-error-port))
-        (game-loop)))
+        (let ((rows (cdr (assq 'rows parameters)))
+              (columns (cdr (assq 'cols parameters))))
+          (game-loop rows columns))))
     
   #+END_SRC
 
