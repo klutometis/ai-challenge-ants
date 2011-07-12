@@ -83,6 +83,18 @@
       (write-line (read-line) (current-error-port))
       (loop))
   #+END_SRC
+
+  Basic idea with the game loop (according to the [[https://github.com/aichallenge/aichallenge/wiki/Ants-Starter-Pack-Guide][wiki]]):
+
+
+  #+BEGIN_QUOTE
+  Read and cache bot input until a 'ready', 'go', or 'end' is
+  received, then call the update function. The Update, Issue Order and
+  Finish Turn functions can be rolled into the game loop if clearly
+  commented, unless the game loop is part of the starter bot logic.
+  #+END_QUOTE
+  
+  These are guidelines for the starter packs.
 * TODO stdin-bot
 
   #+BEGIN_SRC scheme :tangle stdin-bot.scm :shebang #!/usr/local/bin/csi -s
