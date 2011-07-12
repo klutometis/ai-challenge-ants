@@ -14,6 +14,70 @@
 
   chibi sucks, though: it's slow and segfaults last time I used it on
   the facebook puzzles.
+* TODO bot with chibi
+
+  #+BEGIN_SRC sh :tangle chibi-scheme :shebang #!/usr/bin/env bash
+    cd $(dirname $0)
+    LD_LIBRARY_PATH=./srclib/chibi-scheme \
+        CHIBI_MODULE_PATH=./srclib/chibi-scheme/lib \
+        ./srclib/chibi-scheme/chibi-scheme "${@}"
+    
+  #+END_SRC
+
+  #+BEGIN_SRC makefile :tangle chibi-bot.mk :shebang #!/usr/bin/unexpand -t 4
+    .PHONY: chibi
+    
+    chibi:
+        $(MAKE) -C srclib/chibi-scheme
+    
+  #+END_SRC
+
+
+  #+BEGIN_SRC scheme :tangle chibi-bot.scm :shebang #!/home/pcdanenb/prg/scm/ai-challenge/chibi-scheme
+    (import (srfi 1)
+            (srfi 18)
+            (chibi match)
+            (chibi io))
+    
+    (load "srclib/irregex-0.8.1/irregex.scm")
+    
+    ;;; Approximately like srfi-13
+    (define (string-tokenize string)
+      (irregex-extract '(: (+ graphic)) string))
+    
+    (define (parse-parameters)
+      (let next-parameter ((parameter (read-line))
+                           (parameters '()))
+        (if (eof-object? parameter)
+            parameters
+            (match (string-tokenize parameter)
+              (("ready")
+               (begin
+                 (write-line "go")
+                 parameters))
+              ((key value)
+               (next-parameter (read-line)
+                               (alist-cons (string->symbol key)
+                                           (string->number value)
+                                           parameters)))))))
+    
+    (write-line (parse-parameters) (current-error-port))
+    ;; (let loop ()
+    ;;   (write-line "go")
+    ;;   (loop))
+    ;; (display (read-line) (current-error-port))
+    (write-line "MEIN GOTT FULL OF STARS" (current-error-port))
+    #;
+    (thread-start!
+     (make-thread
+      (lambda ()
+        (write-line "go"))))
+    (let loop ()
+      (write-line "go")
+      (flush-output)
+      (write-line (read-line) (current-error-port))
+      (loop))
+  #+END_SRC
 * TODO stdin-bot
 
   #+BEGIN_SRC scheme :tangle stdin-bot.scm :shebang #!/usr/local/bin/csi -s
