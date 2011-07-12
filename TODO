@@ -232,6 +232,9 @@
   #+END_QUOTE
 
   These are guidelines for the starter packs.
+
+  Maybe the state-matrix can be a row-indexed hash-table
+  of |column|-length vectors?
 * TODO Bot with Chicken
 
   #+BEGIN_SRC scheme :tangle stdin-bot.scm :shebang #!/usr/local/bin/csi -s
