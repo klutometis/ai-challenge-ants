@@ -14,6 +14,20 @@
 
   chibi sucks, though: it's slow and segfaults last time I used it on
   the facebook puzzles.
+
+  According to foof:
+
+  #+BEGIN_EXAMPLE
+  21:41 < klutometis> I love Chibi; but ran into segfaults and
+    performance issues last time I tried to use it with the Facebook
+    puzzles (six to eight months ago).
+  22:29 < foof> klutometis: segfaults will be significantly more rare in
+    0.4
+  22:31 < foof> performance is the same :)
+  22:33 < klutometis> foof: Oh, nice; it's in the running, then. I
+    figure I can drop down into C for performance-sensitive loops.
+  22:51 < foof> If you do find a segfault, please file a bug report.
+  #+END_EXAMPLE
 * TODO bot with chibi
 
   #+BEGIN_SRC sh :tangle chibi-scheme :shebang #!/usr/bin/env bash
