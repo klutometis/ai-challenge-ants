@@ -1,4 +1,13 @@
 # -*- org -*-
+* TODO compilation
+
+  #+BEGIN_SRC sh
+    org-tangle TODO && chicken-scheme -purge && cd /tmp/tools && ./playgame.py --engine_seed 42 --player_seed 42 --food none --end_wait=0.25 --verbose --log_dir game_logs --turns 30 --map_file submission_test/test.map ~/prg/scm/ai-challenge/stdin-bot.scm "python submission_test/TestBot.py" -e --nolaunch --strict --capture_errors
+  #+END_SRC
+
+  #+BEGIN_SRC sh
+    org-tangle TODO && chicken-scheme -purge && cd /tmp/tools && ./playgame.py --nolaunch -I -O -E --engine_seed 42 --player_seed 42 --end_wait=0.25 --log_dir game_logs --turns 1000 --map_file maps/symmetric_maps/symmetric_10.map ~/prg/scm/ai-challenge/stdin-bot.scm ~/prg/scm/ai-challenge/stdin-bot.scm ~/prg/scm/ai-challenge/stdin-bot.scm ~/prg/scm/ai-challenge/stdin-bot.scm; for i in /tmp/tools/game_logs/*bot0.*; do echo $i; cat -n $i; done
+  #+END_SRC
 * TODO same problem: how to submit to contests which take c?
   either we upload some architecture-dependent binaries/libraries, or
   use something like chibi.
