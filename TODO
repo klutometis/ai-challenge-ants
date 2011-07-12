@@ -76,16 +76,7 @@
                                            parameters)))))))
     
     (write-line (parse-parameters) (current-error-port))
-    ;; (let loop ()
-    ;;   (write-line "go")
-    ;;   (loop))
-    ;; (display (read-line) (current-error-port))
-    (write-line "MEIN GOTT FULL OF STARS" (current-error-port))
-    #;
-    (thread-start!
-     (make-thread
-      (lambda ()
-        (write-line "go"))))
+    
     (let loop ()
       (write-line "go")
       (flush-output)
