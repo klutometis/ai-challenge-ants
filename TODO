@@ -1,6 +1,5 @@
 # -*- org -*-
-* TODO compilation
-
+* TODO Compilation
   #+BEGIN_SRC sh
     org-tangle TODO && chicken-scheme -purge && cd /tmp/tools && ./playgame.py --engine_seed 42 --player_seed 42 --food none --end_wait=0.25 --verbose --log_dir game_logs --turns 30 --map_file submission_test/test.map ~/prg/scm/ai-challenge/stdin-bot.scm "python submission_test/TestBot.py" -e --nolaunch --strict --capture_errors
   #+END_SRC
@@ -8,14 +7,14 @@
   #+BEGIN_SRC sh
     org-tangle TODO && chicken-scheme -purge && cd /tmp/tools && ./playgame.py --nolaunch -I -O -E --engine_seed 42 --player_seed 42 --end_wait=0.25 --log_dir game_logs --turns 1000 --map_file maps/symmetric_maps/symmetric_10.map ~/prg/scm/ai-challenge/stdin-bot.scm ~/prg/scm/ai-challenge/stdin-bot.scm ~/prg/scm/ai-challenge/stdin-bot.scm ~/prg/scm/ai-challenge/stdin-bot.scm; for i in /tmp/tools/game_logs/*bot0.*; do echo $i; cat -n $i; done
   #+END_SRC
-* TODO same problem: how to submit to contests which take c?
-  either we upload some architecture-dependent binaries/libraries, or
+* TODO Same problem: how to submit to contests which take C?
+  Either we upload some architecture-dependent binaries/libraries, or
   use something like chibi.
 
-  chibi sucks, though: it's slow and segfaults last time I used it on
+  Chibi sucks, though: it's slow and segfaults last time I used it on
   the facebook puzzles.
 
-  According to foof:
+  According to foof, though:
 
   #+BEGIN_EXAMPLE
   21:41 < klutometis> I love Chibi; but ran into segfaults and
@@ -28,8 +27,13 @@
     figure I can drop down into C for performance-sensitive loops.
   22:51 < foof> If you do find a segfault, please file a bug report.
   #+END_EXAMPLE
-* TODO bot with chibi
+* TODO Running chibi
+  We need to clean up the chibi execution mechanism; even if we
+  compile a thin wrapper around the repl, we still have to specify
+  library paths, don't we?
 
+  The bash-script-with-cd-thing bugs me; is it the best we can do?
+* TODO Bot with chibi
   #+BEGIN_SRC sh :tangle chibi-scheme :shebang #!/usr/bin/env bash
     cd $(dirname $0)
     LD_LIBRARY_PATH=./srclib/chibi-scheme \
@@ -95,7 +99,7 @@
   #+END_QUOTE
   
   These are guidelines for the starter packs.
-* TODO stdin-bot
+* TODO Bot with Chicken
 
   #+BEGIN_SRC scheme :tangle stdin-bot.scm :shebang #!/usr/local/bin/csi -s
     (use matchable
