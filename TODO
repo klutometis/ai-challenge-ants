@@ -1,0 +1,77 @@
+# -*- org -*-
+* TODO same problem: how to submit to contests which take c?
+  either we upload some architecture-dependent binaries/libraries, or
+  use something like chibi.
+
+  chibi sucks, though: it's slow and segfaults last time I used it on
+  the facebook puzzles.
+* TODO stdin-bot
+
+  #+BEGIN_SRC scheme :tangle stdin-bot.scm :shebang #!/usr/local/bin/csi -s
+    (use matchable
+         srfi-13
+         srfi-1
+         debug
+         ports
+         srfi-39
+         syslog
+         irregex
+         srfi-18)
+    
+    (define old-write-line write-line)
+    
+    (define (write-line line)
+      #;(debug/syslog line)
+      (old-write-line line))
+    
+    (define (parse-parameters)
+      (let next-parameter ((parameter (read-line))
+                           (parameters '()))
+        (debug/syslog parameter)
+        (match (string-tokenize parameter)
+          (("ready")
+           (write-line "go"))
+          ((key value)
+           (next-parameter (read-line)
+                           (alist-cons (string->symbol key)
+                                       (string->number value)
+                                       parameters))))))
+    
+    (define (turn? turn)
+      (irregex-match "turn [0-9]+" turn))
+    
+    (define (game-loop)
+      (debug/syslog "YES, WIRKLICH!")
+      (let next-turn ((turn (read-line)))
+        (debug/syslog turn)
+        #;
+        (match turn
+          ((? turn)
+           (debug/syslog "bitches!"))
+          (_ (debug/syslog "fuck that!")))))
+    
+    (parse-parameters)
+    (debug/syslog "unthoeuthnueothnNTHTHNTNHTHN")
+    
+    #;
+    (thread-start!
+     (make-thread
+      (lambda ()
+        (let loop ()
+          (let ((line (read-line)))
+            (debug/syslog (format "HARRRO ~a" line)))))))
+    
+     (let loop ()
+       (begin
+         (thread-start!
+          (make-thread
+           read-line))
+         (write-line "go")
+         (loop)))
+    
+    #;(game-loop)
+    (debug/syslog "balls")
+    ;; (debug/syslog "balls" (read-line))
+    ;; (debug "balls2")
+    
+  #+END_SRC
