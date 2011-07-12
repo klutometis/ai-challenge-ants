@@ -129,13 +129,18 @@
     
     (load "srclib/irregex-0.8.1/irregex.scm")
     
-    ;;; Approximately like srfi-13
+    ;; (define (string-tokenize string)
+    ;;   (irregex-extract '(: (+ graphic)) string))
+    
+    ;;; Approximately like srfi-13, but faster than using
+    ;;; `irregex-extract'.
     (define (string-tokenize string)
-      (irregex-extract '(: (+ graphic)) string))
+      (irregex-split " " string))
     
     (define (parse-parameters)
       (let next-parameter ((parameter (read-line))
                            (parameters '()))
+        (write-line (string-tokenize parameter) (current-error-port))
         (if (eof-object? parameter)
             parameters
             (match (string-tokenize parameter)
@@ -151,7 +156,8 @@
                                            parameters)))))))
     
     (define (game-loop)
-      (let next-turn ((turn (read-line)))
+      (let next-turn ((turn (read-line))
+                      (turn-buffer '()))
         ;; Match on `turn', `w', `f', `a', `d', `go', `score'. Upon
         ;; `turn', clear everything except for water; `f', `a', `d':
         ;; update the state matrix; `score': feedback for utility
@@ -160,34 +166,30 @@
         ;; `end' and `players' are documented, but I haven't seen them yet
         ;; (can we communicate with some kind of external server to push
         ;; data to a utility function?).
-        ;; (write-line turn (current-error-port))
+        (write-line turn (current-error-port))
         (if (eof-object? turn)
             0
-            (begin
-              (match turn
-                ("go"
-                 (begin
-                   (write-line "go")
-                   (flush-output)))
-                (_ (string-tokenize turn)))
-              (next-turn (read-line)))
             #;
+            (match turn
+              ("go"
+               (begin
+                 (for-each string-tokenize turn-buffer)
+                 (write-line "go")
+                 (flush-output)
+                 (next-turn (read-line) '())))
+              (_ (next-turn (read-line) (cons turn turn-buffer))))
             (begin
-              ;; (write-line (string-tokenize turn) (current-error-port))
-              ;; (flush-output (current-error-port))
               (match (string-tokenize turn)
                 (("go")
                  (begin
                    (write-line "go")
                    (flush-output)))
-                ;; (("turn" turn))
-                ;; (("w" row col))
-                ;; (("f" row col))
-                ;; (("a" row col))
-                ;; (("d" row col))
-                (_)
-                )
-              (next-turn (read-line))))))
+                (("turn" turn))
+                (("w" row col))
+                (("f" row col))
+                (("a" row col owner))
+                (("d" row col owner)))
+              (next-turn (read-line) '())))))
     
     (define (main arguments)
       (let ((parameters (parse-parameters)))
