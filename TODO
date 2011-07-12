@@ -1,11 +1,48 @@
 # -*- org -*-
 * TODO Compilation
   #+BEGIN_SRC sh
-    org-tangle TODO && chicken-scheme -purge && cd /tmp/tools && ./playgame.py --engine_seed 42 --player_seed 42 --food none --end_wait=0.25 --verbose --log_dir game_logs --turns 30 --map_file submission_test/test.map ~/prg/scm/ai-challenge/stdin-bot.scm "python submission_test/TestBot.py" -e --nolaunch --strict --capture_errors
+    org-tangle TODO && \
+        chicken-scheme -purge && \
+        cd /tmp/tools && \
+        ./playgame.py \
+          --engine_seed 42 \
+          --player_seed 42 \
+          --food none \
+          --end_wait=0.25 \
+          --verbose \
+          --log_dir game_logs \
+          --turns 30 \
+          --map_file submission_test/test.map \
+          ~/prg/scm/ai-challenge/stdin-bot.scm \
+          "python submission_test/TestBot.py" \
+          -e \
+          --nolaunch \
+          --strict \
+          --capture_errors
   #+END_SRC
 
   #+BEGIN_SRC sh
-    org-tangle TODO && chicken-scheme -purge && cd /tmp/tools && ./playgame.py --nolaunch -I -O -E --engine_seed 42 --player_seed 42 --end_wait=0.25 --log_dir game_logs --turns 1000 --map_file maps/symmetric_maps/symmetric_10.map ~/prg/scm/ai-challenge/stdin-bot.scm ~/prg/scm/ai-challenge/stdin-bot.scm ~/prg/scm/ai-challenge/stdin-bot.scm ~/prg/scm/ai-challenge/stdin-bot.scm; for i in /tmp/tools/game_logs/*bot0.*; do echo $i; cat -n $i; done
+    org-tangle TODO && \
+        chicken-scheme -purge && \
+        cd /tmp/tools && \
+        ./playgame.py \
+          --nolaunch \
+          -I \
+          -O \
+          -E \
+          --engine_seed 42 \
+          --player_seed 42 \
+          --end_wait=0.25 \
+          --log_dir game_logs \
+          --turns 1000 \
+          --map_file maps/symmetric_maps/symmetric_10.map \
+          ~/prg/scm/ai-challenge/stdin-bot.scm \
+          ~/prg/scm/ai-challenge/stdin-bot.scm \
+          ~/prg/scm/ai-challenge/stdin-bot.scm \
+          ~/prg/scm/ai-challenge/stdin-bot.scm
+    
+    for i in /tmp/tools/game_logs/*bot0.*; do echo $i; cat -n $i; done
+    
   #+END_SRC
 * TODO Same problem: how to submit to contests which take C?
   Either we upload some architecture-dependent binaries/libraries, or
@@ -33,6 +70,37 @@
   library paths, don't we?
 
   The bash-script-with-cd-thing bugs me; is it the best we can do?
+
+  Take a look at [[http://synthcode.com/scheme/chibi/#h1_Installation][this]], though; we can build a static executable
+  (though we probably still have to specify the =CHIBI_MODULE_PATH=
+  with reference to the script dir, though):
+
+  #+BEGIN_QUOTE
+  The "chibi-scheme-static" make target builds an equivalent static
+  executable.
+
+  To compile a static executable, use 
+
+  #+BEGIN_EXAMPLE
+  make chibi-scheme-static SEXP_USE_DL=0
+  #+END_EXAMPLE
+
+  To compile a static executable with all C libraries statically
+  included, first you need to create a clibs.c file, which can be done
+  with: 
+
+  #+BEGIN_EXAMPLE
+  make clibs.c
+  #+END_EXAMPLE
+
+  or edited manually. Be sure to run this with a non-static
+  chibi-scheme. Then you can make the static executable with: 
+
+  #+BEGIN_EXAMPLE
+  make -B chibi-scheme-static SEXP_USE_DL=0
+  CPPFLAGS=-DSEXP_USE_STATIC_LIBS
+  #+END_EXAMPLE
+  #+END_QUOTE
 * TODO Bot with chibi
   #+BEGIN_SRC sh :tangle chibi-scheme :shebang #!/usr/bin/env bash
     cd $(dirname $0)
