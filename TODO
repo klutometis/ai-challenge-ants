@@ -169,15 +169,6 @@
         (write-line turn (current-error-port))
         (if (eof-object? turn)
             0
-            #;
-            (match turn
-              ("go"
-               (begin
-                 (for-each string-tokenize turn-buffer)
-                 (write-line "go")
-                 (flush-output)
-                 (next-turn (read-line) '())))
-              (_ (next-turn (read-line) (cons turn turn-buffer))))
             (begin
               (match (string-tokenize turn)
                 (("go")
@@ -235,6 +226,15 @@
 
   Maybe the state-matrix can be a row-indexed hash-table
   of |column|-length vectors?
+
+  States could be bit-orthogonal integers; clearing the matrix:
+  clearing the bit flags for `d', `a', `f'. (`w' is constant.)
+
+  (This is $O(n \times m \times 3)$, by the way; as opposed to having
+  a static water matrix and a transitory food/ant matrix. Separate
+  matrices may be a pain-in-the-ass, though, when implementing
+  e.g. $A*$, since we have to query two matrices when calculating
+  paths.)
 * TODO Bot with Chicken
 
   #+BEGIN_SRC scheme :tangle stdin-bot.scm :shebang #!/usr/local/bin/csi -s
