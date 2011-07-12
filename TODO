@@ -150,6 +150,14 @@
     
     (define (game-loop)
       (let next-turn ((turn (read-line)))
+        ;; Match on `turn', `w', `f', `a', `d', `go', `score'. Upon
+        ;; `turn', clear everything except for water; `f', `a', `d':
+        ;; update the state matrix; `score': feedback for utility
+        ;; functions or just testing?
+        ;;
+        ;; `end' and `players' are documented, but I haven't seen them yet
+        ;; (can we communicate with some kind of external server to push
+        ;; data to a utility function?).
         (match turn
           ("go"
            (begin
