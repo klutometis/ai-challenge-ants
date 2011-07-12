@@ -140,6 +140,7 @@
               (("ready")
                (begin
                  (write-line "go")
+                 (flush-output)
                  parameters))
               ((key value)
                (next-parameter (read-line)
@@ -147,17 +148,29 @@
                                            (string->number value)
                                            parameters)))))))
     
-    (write-line (parse-parameters) (current-error-port))
+    (define (game-loop)
+      (let next-turn ((turn (read-line)))
+        (match turn
+          ("go"
+           (begin
+             (write-line "go")
+             (flush-output)
+             (next-turn (read-line))))
+          ((? eof-object?)
+           0)
+          (_
+           (write-line turn (current-error-port))
+           (next-turn (read-line))
+           1))))
     
-    (let loop ()
-      (write-line "go")
-      (flush-output)
-      (write-line (read-line) (current-error-port))
-      (loop))
+    (define (main arguments)
+      (let ((parameters (parse-parameters)))
+        (write-line parameters (current-error-port))
+        (game-loop)))
+    
   #+END_SRC
 
   Basic idea with the game loop (according to the [[https://github.com/aichallenge/aichallenge/wiki/Ants-Starter-Pack-Guide][wiki]]):
-
 
   #+BEGIN_QUOTE
   Read and cache bot input until a 'ready', 'go', or 'end' is
@@ -166,6 +179,14 @@
   commented, unless the game loop is part of the starter bot logic.
   #+END_QUOTE
   
+  Basic idea with update:
+
+  #+BEGIN_QUOTE
+  Parse the bot input and update the internal state of the
+  game. Should clear ants and food before each turn and only add back
+  what is given by the engine.
+  #+END_QUOTE
+
   These are guidelines for the starter packs.
 * TODO Bot with Chicken
 
