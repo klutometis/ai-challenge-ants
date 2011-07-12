@@ -118,6 +118,8 @@
     
   #+END_SRC
 
+  Wow: =string-tokenize= is too slow to handle the input before
+  timeout!
 
   #+BEGIN_SRC scheme :tangle chibi-bot.scm :shebang #!/home/pcdanenb/prg/scm/ai-challenge/chibi-scheme
     (import (srfi 1)
@@ -158,22 +160,39 @@
         ;; `end' and `players' are documented, but I haven't seen them yet
         ;; (can we communicate with some kind of external server to push
         ;; data to a utility function?).
-        (match turn
-          ("go"
-           (begin
-             (write-line "go")
-             (flush-output)
-             (next-turn (read-line))))
-          ((? eof-object?)
-           0)
-          (_
-           (write-line turn (current-error-port))
-           (next-turn (read-line))
-           1))))
+        ;; (write-line turn (current-error-port))
+        (if (eof-object? turn)
+            0
+            (begin
+              (match turn
+                ("go"
+                 (begin
+                   (write-line "go")
+                   (flush-output)))
+                (_ (string-tokenize turn)))
+              (next-turn (read-line)))
+            #;
+            (begin
+              ;; (write-line (string-tokenize turn) (current-error-port))
+              ;; (flush-output (current-error-port))
+              (match (string-tokenize turn)
+                (("go")
+                 (begin
+                   (write-line "go")
+                   (flush-output)))
+                ;; (("turn" turn))
+                ;; (("w" row col))
+                ;; (("f" row col))
+                ;; (("a" row col))
+                ;; (("d" row col))
+                (_)
+                )
+              (next-turn (read-line))))))
     
     (define (main arguments)
       (let ((parameters (parse-parameters)))
         (write-line parameters (current-error-port))
+        (flush-output (current-error-port))
         (game-loop)))
     
   #+END_SRC
