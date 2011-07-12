@@ -124,6 +124,8 @@
     (let loop ()
       (begin
         (write-line "go")
+        (flush-output)
+        (debug (read-line))
         (loop)))
     
   #+END_SRC
