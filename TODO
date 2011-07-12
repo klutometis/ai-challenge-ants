@@ -103,10 +103,10 @@
   #+END_QUOTE
 * TODO Bot with chibi
   #+BEGIN_SRC sh :tangle chibi-scheme :shebang #!/usr/bin/env bash
-    cd $(dirname $0)
-    LD_LIBRARY_PATH=./srclib/chibi-scheme \
-        CHIBI_MODULE_PATH=./srclib/chibi-scheme/lib \
-        ./srclib/chibi-scheme/chibi-scheme "${@}"
+    scriptdir=$(dirname $0)
+    LD_LIBRARY_PATH="${scriptdir}/srclib/chibi-scheme" \
+        CHIBI_MODULE_PATH="${scriptdir}/srclib/chibi-scheme/lib" \
+        "${scriptdir}/srclib/chibi-scheme/chibi-scheme" "${@}"
     
   #+END_SRC
 
